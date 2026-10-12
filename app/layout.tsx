@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
+import { Roboto, Roboto_Condensed } from "next/font/google";
 import "./globals.css";
+
+const body = Roboto({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-body" });
+const display = Roboto_Condensed({ subsets: ["latin"], weight: ["700"], variable: "--font-display-face" });
 
 export const metadata: Metadata = {
   title: "Fantasy Basketball Roster Planner",
@@ -7,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="en" className={`${body.variable} ${display.variable}`}><body>{children}</body></html>;
 }
