@@ -18,22 +18,21 @@ export function AuthForm({ mode }: { mode: keyof typeof settings }) {
   const email = mode !== "update-password";
   const password = mode !== "reset-password";
   const confirmation = mode === "sign-up" || mode === "update-password";
-  const input = "mt-2 w-full rounded-lg border border-slate-600 bg-slate-900 px-4 py-3 focus:outline-2 focus:outline-orange-400";
-  return <section className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-800/50 p-6 sm:p-8">
-    <h1 className="text-3xl font-bold">{config.title}</h1>
-    <p className="mt-3 text-slate-300">{config.description}</p>
-    <form action={action} className="mt-8 space-y-5">
-      {email && <label className="block">Email<input className={input} name="email" type="email" value={emailValue} onChange={event => setEmailValue(event.target.value)} autoComplete="email" required maxLength={254} /></label>}
-      {password && <label className="block">Password<input className={input} name="password" type="password" autoComplete={mode === "sign-in" ? "current-password" : "new-password"} required minLength={mode === "sign-in" ? undefined : 8} maxLength={128} /></label>}
-      {confirmation && <label className="block">Confirm password<input className={input} name="confirmation" type="password" autoComplete="new-password" required minLength={8} maxLength={128} /></label>}
-      {state.error && <p role="alert" className="text-sm text-red-300">{state.error}</p>}
-      {state.message && <p role="status" className="text-sm text-green-300">{state.message}</p>}
-      <button disabled={pending} className="w-full rounded-lg bg-orange-400 px-4 py-3 font-semibold text-slate-950 hover:bg-orange-300 disabled:opacity-60">{pending ? "Please wait…" : config.button}</button>
+  return <section className="card w-full max-w-md border-t-4 border-t-brand p-6 sm:p-8">
+    <h1 className="page-title">{config.title}</h1>
+    <p className="mt-2 muted">{config.description}</p>
+    <form action={action} className="mt-7 space-y-5">
+      {email && <label className="label">Email<input className="field font-normal" name="email" type="email" value={emailValue} onChange={event => setEmailValue(event.target.value)} autoComplete="email" required maxLength={254} /></label>}
+      {password && <label className="label">Password<input className="field font-normal" name="password" type="password" autoComplete={mode === "sign-in" ? "current-password" : "new-password"} required minLength={mode === "sign-in" ? undefined : 8} maxLength={128} /></label>}
+      {confirmation && <label className="label">Confirm password<input className="field font-normal" name="confirmation" type="password" autoComplete="new-password" required minLength={8} maxLength={128} /></label>}
+      {state.error && <p role="alert" className="text-sm text-danger">{state.error}</p>}
+      {state.message && <p role="status" className="text-sm text-success">{state.message}</p>}
+      <button disabled={pending} className="btn-primary btn-lg w-full">{pending ? "Please wait…" : config.button}</button>
     </form>
-    <nav aria-label="Account options" className="mt-6 flex flex-wrap gap-4 text-sm text-orange-300">
-      {mode !== "sign-in" && <Link href="/sign-in">Sign in</Link>}
-      {mode === "sign-in" && <><Link href="/sign-up">Create account</Link><Link href="/reset-password">Forgot password?</Link></>}
-      {mode === "update-password" && <Link href="/dashboard">Back to dashboard</Link>}
+    <nav aria-label="Account options" className="mt-6 flex flex-wrap gap-4 border-t border-line pt-5 text-sm">
+      {mode !== "sign-in" && <Link className="link" href="/sign-in">Sign in</Link>}
+      {mode === "sign-in" && <><Link className="link" href="/sign-up">Create account</Link><Link className="link" href="/reset-password">Forgot password?</Link></>}
+      {mode === "update-password" && <Link className="link" href="/dashboard">Back to dashboard</Link>}
     </nav>
   </section>;
 }

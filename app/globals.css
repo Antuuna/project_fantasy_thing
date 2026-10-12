@@ -1,7 +1,72 @@
 @import "tailwindcss";
 
-:root { color-scheme: dark; }
-body { margin: 0; background: #0c1420; color: #edf2f7; font-family: Arial, Helvetica, sans-serif; }
-input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid #fb923c; outline-offset: 3px; }
+/* Sports-network palette: light page, black masthead, red brand accent, blue links. */
+@theme inline {
+  --font-sans: var(--font-body), system-ui, sans-serif;
+  --font-display: var(--font-display-face), var(--font-body), system-ui, sans-serif;
+
+  --color-page: #f1f2f3;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f6f7f8;
+  --color-masthead: #151515;
+  --color-line: #dcdddf;
+  --color-line-strong: #c4c6c8;
+  --color-ink: #1d1e1f;
+  --color-muted: #6c6d6f;
+  --color-brand: #d00000;
+  --color-brand-dark: #a80000;
+  --color-link: #0a5ec0;
+  --color-success: #1a7f37;
+  --color-danger: #b42318;
+  --color-warning: #8a5a00;
+}
+
+:root { color-scheme: light; }
+body { margin: 0; background: var(--color-page); color: var(--color-ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--color-link); outline-offset: 2px; }
 button { cursor: pointer; }
 button:disabled { cursor: wait; }
+
+@layer components {
+  /* Headings */
+  .eyebrow { @apply font-display text-xs font-bold uppercase tracking-[0.14em] text-brand; }
+  .page-title { @apply font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl; }
+  .section-title { @apply font-display text-lg font-bold uppercase tracking-wide text-ink; }
+
+  /* Cards: white panel with a ruled header strip */
+  .card { @apply rounded-md border border-line bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.06)]; }
+  .card-head { @apply -mx-5 -mt-5 mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3; }
+  .card-title { @apply font-display text-base font-bold uppercase tracking-wide text-ink; }
+
+  /* Links and text */
+  .link { @apply font-medium text-link hover:underline underline-offset-2; }
+  .muted { @apply text-muted; }
+
+  /* Buttons */
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-bold transition-colors disabled:opacity-60; }
+  .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-bold transition-colors disabled:opacity-60 bg-brand text-white hover:bg-brand-dark; }
+  .btn-secondary { @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-bold transition-colors disabled:opacity-60 border border-line-strong bg-surface text-ink hover:bg-surface-alt; }
+  .btn-lg { @apply px-6 py-3 text-base; }
+
+  /* Form fields */
+  .field { @apply mt-1.5 block w-full rounded-md border border-line-strong bg-surface px-3 py-2.5 text-ink placeholder:text-muted; }
+  .label { @apply block text-sm font-bold text-ink; }
+
+  /* Stat tables */
+  .table-wrap { @apply overflow-x-auto rounded-md border border-line bg-surface; }
+  .data-table { @apply w-full text-left text-sm tabular-nums; }
+  .data-table thead { @apply bg-surface-alt; }
+  .data-table thead th { @apply border-b border-line px-3 py-2 font-display text-xs font-bold uppercase tracking-wide text-muted; }
+  .data-table tbody tr { @apply border-t border-line first:border-t-0 hover:bg-surface-alt; }
+  .data-table tbody tr:nth-child(even) { @apply bg-[#fafafa] hover:bg-surface-alt; }
+  .data-table td, .data-table tbody th { @apply px-3 py-2.5; }
+  .data-table caption { @apply border-b border-line px-3 py-2 text-left text-xs text-muted; }
+
+  /* Pagination */
+  .pager { @apply mt-6 flex flex-wrap items-center gap-3 text-sm; }
+  .pager a { @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-bold transition-colors disabled:opacity-60 border border-line-strong bg-surface text-ink hover:bg-surface-alt; }
+  .pager span { @apply font-bold text-muted; }
+
+  /* Position badge */
+  .badge { @apply inline-flex items-center rounded-sm bg-surface-alt px-1.5 py-0.5 font-display text-xs font-bold uppercase tracking-wide text-muted ring-1 ring-line; }
+}
