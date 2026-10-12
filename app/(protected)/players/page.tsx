@@ -29,6 +29,7 @@ export default async function Players({ searchParams }: { searchParams: Promise<
         </tr>)}</tbody>
       </table>
     </div> : <p role="status" className="mt-6">No players match your search.</p>)}
+    {players.length > 0 && <p className="mt-3 text-sm text-slate-300 sm:hidden">Swipe or scroll the table to see all season averages.</p>}
     <nav aria-label="Player pagination" className="mt-6 flex items-center gap-6">
       {page > 1 && <Link className="text-orange-300" href={href(page - 1)}>Previous page</Link>}
       <span>Page {page}</span>{hasNext && <Link className="text-orange-300" href={href(page + 1)}>Next page</Link>}

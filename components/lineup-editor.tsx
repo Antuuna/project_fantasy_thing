@@ -38,7 +38,7 @@ export function LineupEditor({ date, members, saved }: { date: string; members: 
       </p>
       <p className="mt-2 text-sm text-slate-300">Changing date or leaving this page discards unsaved changes.</p>
       {removedStarters && <p className="mt-3 text-amber-300">A saved starter is no longer on your roster. Choose a current player for each empty slot before saving.</p>}
-      <form action={action} className="mt-5 space-y-4">
+      <form action={action} onReset={event => event.preventDefault()} className="mt-5 space-y-4">
         <input type="hidden" name="lineup_date" value={date} />
         <fieldset disabled={pending} className="grid gap-4 sm:grid-cols-2">
           {selection.map((playerId, slot) => (

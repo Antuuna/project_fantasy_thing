@@ -37,6 +37,7 @@ export default async function Player({ params, searchParams }: { params: Promise
       </table>
     </div>
     {!history.length && <p role="status" className="mt-4">No recorded appearances on this page.</p>}
+    {history.length > 0 && <p className="mt-3 text-sm text-slate-300 sm:hidden">Swipe or scroll the table to see all game statistics.</p>}
     <nav aria-label="History pagination" className="mt-6 flex gap-6">
       {page > 1 && <Link className="text-orange-300" href={`/players/${id}?page=${page - 1}`}>Previous page</Link>}
       <span>Page {page}</span>{hasNext && <Link className="text-orange-300" href={`/players/${id}?page=${page + 1}`}>Next page</Link>}

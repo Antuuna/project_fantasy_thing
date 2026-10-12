@@ -50,6 +50,9 @@ async function save(page: Page, userId: string, date: string, players: FixturePl
   await page.getByRole("button", { name: "Save lineup", exact: true }).click();
   await expect(page.locator("p[role=status]").filter({ hasText: "Lineup saved." })).toBeVisible();
   await expect(page.getByRole("button", { name: "Save lineup", exact: true })).toBeEnabled();
+  for (const [index, player] of starters.entries()) {
+    await expect(page.getByLabel(`Starter ${index + 1}`, { exact: true })).toHaveValue(String(player.id));
+  }
   await expect.poll(async () => (await snapshot(userId, date)).map(({ player_id, slot }) => ({ player_id, slot })))
     .toEqual(expected(players, starters));
   const saved = page.getByRole("region", { name: "Saved snapshot", exact: true });

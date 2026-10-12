@@ -22,6 +22,9 @@ for (const mode of ['empty', 'failure']) {
         await expect(page.getByRole('table')).toHaveCount(0);
         await page.goto('/players/2544');
         await expect(page.getByRole('heading', { name: 'No dataset imported' })).toBeVisible();
+        await page.goto('/dashboard');
+        await expect(page.locator('p[role=status]').filter({hasText:'No dataset imported'})).toBeVisible();
+        await expect(page.getByLabel('Lineup date', {exact:true})).toHaveCount(0);
       } else {
         await expect(page.getByRole('heading', { name: 'We couldn’t load this page' })).toBeVisible();
         fault(user.id, 'clean');
