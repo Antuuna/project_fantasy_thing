@@ -65,8 +65,7 @@ class TapReport:
             raise TapError("pgTAP finish() did not complete")
 
 
-def run_database():
-    sql_path = Path(__file__).resolve().parents[2] / "supabase/tests/roster_planner.sql"
+def run_suite(sql_path):
     report = TapReport()
     rollback_seen = False
     with connect_local_db(autocommit=True) as connection:
@@ -98,7 +97,14 @@ def run_database():
         finally:
             # Also clear fixtures if SQL or parsing fails before its final rollback.
             connection.rollback()
-    print("PASS: %s pgTAP assertions; finish completed; fixtures rolled back." % report.count)
+    print("PASS: %s: %s pgTAP assertions; finish completed; fixtures rolled back." %
+          (sql_path.name, report.count))
+
+
+def run_database():
+    directory = Path(__file__).resolve().parents[2] / "supabase/tests"
+    for name in ("roster_planner.sql", "authorization.sql"):
+        run_suite(directory / name)
 
 
 class TapParserTests(unittest.TestCase):

@@ -15,3 +15,12 @@ Before editing, recorded `git status --short`, full tracked diff, and untracked 
 - Ordinary CI is synthetic; full-data validation remains a separate required local gate. CI workflow execution on GitHub is not claimed as performed locally.
 
 Subsequent milestone results are appended after their combined gates pass.
+
+## M1 — authorization and transactions
+
+- Added rollback-only authorization/invariant SQL: original 18 plus 190 expanded assertions passed. Covers all shared/private tables, both real fixture owners, anonymous access, column grants, crafted ownership, bounds, invalid replacement with exact snapshots, and nonvacuous account cascades.
+- Independent-transaction suite: 8 tests passed, each proving a competing backend waits on the first transaction via `pg_blocking_pids` before commit. Covers all required race scenarios and both save/member-change serial orders.
+- Production browser/API suite: 4 tests passed (2 auth, 2 real two-user authenticated Supabase API security tests). Lint/typecheck passed; production build reproduced in that run. Full-data discovery: 22 tests passed, zero skips, including original 12 and new race/fixture tests.
+- Independent migration review found no concrete security/transaction defect. No migration changed. Existing locking RPCs, importer and session clients retained.
+- Worker reruns briefly encountered approval-review HTTP 429 infrastructure failures; coordinator reruns executed successfully. No required check remains blocked.
+- Next: M2 player queries and bounded historical browsing.

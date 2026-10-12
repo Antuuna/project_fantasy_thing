@@ -50,7 +50,9 @@ jobs:
           .venv/bin/python scripts/testing/seed_synthetic.py
           .venv/bin/python scripts/testing/seed_synthetic.py --check
       - name: Database assertions and independent-transaction races
-        run: npm run test:db
+        run: |
+          npm run test:db
+          npm run test:concurrency
       - name: Full browser suite against production server
         run: npm run test:e2e:production
       - name: Check shared fixtures survived application tests
