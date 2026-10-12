@@ -2,7 +2,7 @@ import "server-only";
 
 import { requireUser } from "@/lib/auth/session";
 import { PLAYER_PAGE_SIZE, type DatasetMetadata, type PlayerAppearance, type PlayerDetails, type PlayerList, type SeasonPlayer } from "./types";
-import { escapeSearch, parsePage, parsePlayerId, parseSearch, type UrlValue } from "./validation";
+import { parsePage, parsePlayerId, parseSearch, type UrlValue } from "./validation";
 
 export class PlayerQueryError extends Error {
   constructor(message: string) {
@@ -47,11 +47,10 @@ export async function listPlayers(input: { query?: UrlValue; page?: UrlValue } =
   const metadata = await latestMetadata(supabase);
   const empty: PlayerList = { metadata, players: [], query, page, pageSize: PLAYER_PAGE_SIZE, hasNext: false };
   if (!metadata) return empty;
-  let request = supabase.from("nba_season_players").select(playerColumns).eq("season", metadata.season)
-    .order("full_name", { ascending: true }).order("id", { ascending: true });
-  if (query) request = request.ilike("full_name", `%${escapeSearch(query)}%`);
   const offset = (page - 1) * PLAYER_PAGE_SIZE;
-  const { data, error } = await request.range(offset, offset + PLAYER_PAGE_SIZE);
+  const { data, error } = await supabase.rpc("search_season_players", {
+    p_season: metadata.season, p_query: query, p_offset: offset,
+  });
   if (error) throw new PlayerQueryError("Players could not be loaded. Please try again.");
   const rows = (data ?? []) as SeasonPlayer[];
   return { ...empty, players: rows.slice(0, PLAYER_PAGE_SIZE), hasNext: rows.length > PLAYER_PAGE_SIZE };

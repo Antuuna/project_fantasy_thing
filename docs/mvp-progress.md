@@ -32,3 +32,12 @@ Subsequent milestone results are appended after their combined gates pass.
 - SQL gate: 251 assertions passed (18 + 190 + 43 synthetic query assertions). Eight transaction regressions passed. Validation unit suite: 2 tests passed. Synthetic fixture safety: 2 tests; actual rollback insertion checks: 11 assertions passed.
 - Full production suite: 12 passed. The error-retry check exposed that the inherited `reset()` button did not refetch Server Components; switched to installed Next.js `retry()` API and reproduced both targeted state tests (2 passed) with a fresh production build. Lint/typecheck passed after the final change.
 - Independent query/migration review found no authorization, cache-sharing, or bounded-query defect. No required checks skipped. Next: M3 roster and watchlist mutations.
+
+## M3 — roster and watchlist
+
+- Added authenticated roster rename/add/remove controls, authoritative duplicate/capacity errors, bounded watchlist pages, notes editing, add-to-roster preserving watch entries, and page revalidation.
+- Crafted Server Action POSTs verify unauthenticated rejection, invalid/unknown player errors, and ignored submitted ownership. Browser contexts/account switching prove private-data isolation.
+- Review found a PostgREST `*` search alias; migration `20261012061000_literal_player_search.sql` introduces bounded authenticated invoker search RPC with literal escaping. Applied locally; 29 additional SQL assertions pass (280 total). Eight race regressions pass; four validation unit tests pass.
+- Production run: 17 of 18 passed and exposed saved-textarea implicit-label lookup failure; fixed the component with explicit `htmlFor`/`id` labels. The final affected production gate passed all 8 roster/watchlist/query workflows, including 2,000/2,001-character notes, exact preservation, pagination, and crafted mutations. Auth and other unaffected regression tests passed in the preceding full run; full combined suite repeats at M4.
+- An earlier notes-test timing failure was resolved by waiting for completed UI state and intercepting the actual oversized server submission. No retry-only pass or skip counted. Lint/typecheck and fresh production build pass. Independent mutation/RPC review found no unresolved authorization defect.
+- Next: M4 historical lineups and dashboard.

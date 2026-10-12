@@ -11,6 +11,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
       <nav aria-label="Main navigation" className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-5">
         <Link href="/dashboard" className="font-bold text-orange-400">Roster planner</Link>
         <Link href="/players" className="text-orange-300">Players</Link>
+        <Link href="/watchlist" className="text-orange-300">Watchlist</Link>
         <form action={signOut}><button className="rounded-lg border border-slate-600 px-4 py-2 hover:bg-slate-800">Sign out</button></form>
       </nav>
     </header>

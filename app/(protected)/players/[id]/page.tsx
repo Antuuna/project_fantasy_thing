@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getPlayer } from "@/lib/players/queries";
 import { PlayerValidationError } from "@/lib/players/validation";
 import { PlayerStatistics } from "@/components/player-statistics";
+import { PlayerControls } from "@/components/player-controls";
 
 export default async function Player({ params, searchParams }: { params: Promise<{id: string}>, searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { id } = await params;
@@ -21,6 +22,7 @@ export default async function Player({ params, searchParams }: { params: Promise
     <Link href="/players" className="text-orange-300">Back to players</Link>
     <h1 className="mt-5 text-3xl font-bold">{player.full_name}</h1>
     <p className="mt-3 text-slate-300">Position: {player.position ?? 'Unknown'} · {metadata.season}</p>
+    <PlayerControls playerId={player.id} />
     <h2 className="mt-8 text-xl font-semibold">Season averages</h2><PlayerStatistics player={player} />
     <h2 className="mt-8 text-xl font-semibold">Game history</h2>
     <div className="mt-4 overflow-x-auto rounded-xl border border-slate-700">

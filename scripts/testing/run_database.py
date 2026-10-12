@@ -103,7 +103,7 @@ def run_suite(sql_path):
 
 def run_database():
     directory = Path(__file__).resolve().parents[2] / "supabase/tests"
-    for name in ("roster_planner.sql", "authorization.sql", "player_queries.sql"):
+    for name in ("roster_planner.sql", "authorization.sql", "player_queries.sql", "literal_search.sql"):
         run_suite(directory / name)
 
 

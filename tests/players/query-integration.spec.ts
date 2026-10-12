@@ -142,3 +142,62 @@ test("bounded recent history exposes textual game IDs and teams from recorded ga
     await deleteTestUser(user);
   }
 });
+
+test("authenticated search RPC treats wildcard characters literally and enforces bounds", async () => {
+  const user = await createTestUser("literal-query");
+  try {
+    const client = createTestClient();
+    expect((await client.auth.signInWithPassword({ email: user.email, password: user.password })).error).toBeNull();
+    const metadata = await client.from("nba_dataset_imports").select("season")
+      .order("completed_at", { ascending: false }).order("id", { ascending: false }).limit(1).single();
+    expect(metadata.error).toBeNull();
+    const season = metadata.data!.season;
+    const first = await client.from("nba_season_players").select("id,full_name")
+      .eq("season", season).order("full_name").order("id").limit(1).single();
+    expect(first.error).toBeNull();
+    const search = (query: string | null, offset: number | null) => client.rpc("search_season_players", {
+      p_season: season, p_query: query, p_offset: offset,
+    });
+    const normal = await search(first.data!.full_name, 0);
+    expect(normal.error).toBeNull();
+    expect(normal.data.some((player: { id: number }) => player.id === first.data!.id)).toBe(true);
+    // The real and ordinary synthetic datasets contain no names with these
+    // literal characters. Positive literal matches have rollback SQL fixtures.
+    for (const literal of ["*", "%", "_", "\\"]) {
+      const result = await search(literal, 0);
+      expect(result.error, `literal ${literal}`).toBeNull();
+      expect(result.data, `literal ${literal} must not match ordinary names`).toEqual([]);
+    }
+    const bounded = await search("", 0);
+    const sourcePage = await client.from("nba_season_players").select(directoryColumns)
+      .eq("season", season).order("full_name").order("id").range(0, 20);
+    expect(bounded.error).toBeNull();
+    expect(sourcePage.error).toBeNull();
+    expect(bounded.data).toHaveLength(21);
+    expect(bounded.data).toEqual(sourcePage.data);
+    const next = await search("", 20);
+    const sourceNext = await client.from("nba_season_players").select(directoryColumns)
+      .eq("season", season).order("full_name").order("id").range(20, 40);
+    expect(next.error).toBeNull();
+    expect(sourceNext.error).toBeNull();
+    expect(next.data.length).toBeLessThanOrEqual(21);
+    expect(next.data).toEqual(sourceNext.data);
+    for (const invalidOffset of [null, -1, 199981]) {
+      const rejected = await search("", invalidOffset);
+      expect(rejected.error?.code).toBe("22023");
+      expect(rejected.data).toBeNull();
+    }
+    for (const invalidQuery of [null, "x".repeat(81)]) {
+      const rejected = await search(invalidQuery, 0);
+      expect(rejected.error?.code).toBe("22023");
+      expect(rejected.data).toBeNull();
+    }
+    const anonymous = await createTestClient().rpc("search_season_players", {
+      p_season: season, p_query: "", p_offset: 0,
+    });
+    expect(anonymous.error?.code).toBe("42501");
+    expect(anonymous.data).toBeNull();
+  } finally {
+    await deleteTestUser(user);
+  }
+});
