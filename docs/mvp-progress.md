@@ -41,3 +41,11 @@ Subsequent milestone results are appended after their combined gates pass.
 - Production run: 17 of 18 passed and exposed saved-textarea implicit-label lookup failure; fixed the component with explicit `htmlFor`/`id` labels. The final affected production gate passed all 8 roster/watchlist/query workflows, including 2,000/2,001-character notes, exact preservation, pagination, and crafted mutations. Auth and other unaffected regression tests passed in the preceding full run; full combined suite repeats at M4.
 - An earlier notes-test timing failure was resolved by waiting for completed UI state and intercepting the actual oversized server submission. No retry-only pass or skip counted. Lint/typecheck and fresh production build pass. Independent mutation/RPC review found no unresolved authorization defect.
 - Next: M4 historical lineups and dashboard.
+
+## M4 — historical lineup editor and dashboard
+
+- Added bounded authenticated dashboard reads, metadata-bounded date-only selection, ordered current-roster editor, saved full snapshots, removed historical player labels, and recorded-team game display. Unsaved dates put everyone on the bench; visible warning and before-unload handling explain discarded edits.
+- Saving authenticates and validates canonical dates, ordered distinct IDs and current membership before the authoritative locking `save_lineup` RPC. Invalid replacements preserve every stored column; new members are captured on the next saved bench.
+- Clean combined production gate: all 24 browser/API workflows passed, zero retries/skips, including six lineup flows and Pacific/Tokyo checks. SQL: 280 assertions passed. Proven transaction races: 8 passed. Unit suite: 10 passed. Lint/typecheck and fresh webpack production build passed.
+- Independent review found no security/transaction defect. Resolved review improvements: date input keyed to selected date; prior success message hidden when dirty; explicit starter labels; baseline refreshed from saved props while preserving action feedback. Expanded dashboard required scoping prior auth/status and roster/link assertions; no assertion weakened.
+- No additional schema migration required. Next: M5 confirmation-enabled mail, rendered usability review, final regression and acceptance handoff.

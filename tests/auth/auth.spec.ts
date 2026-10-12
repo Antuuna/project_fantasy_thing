@@ -44,7 +44,7 @@ test("registration, persistent roster, sign-out, sign-in, and password update", 
     await page.getByLabel("Password", { exact: true }).fill(password + "new");
     await page.getByLabel("Confirm password", { exact: true }).fill(password + "new");
     await page.getByRole("button", { name: "Save password" }).click();
-    await expect(page.getByRole("status")).toContainText("password has been updated");
+    await expect(page.getByRole("status").filter({hasText: 'password has been updated'})).toHaveText("Your password has been updated.");
     const verification = createTestClient();
     expect((await verification.auth.signInWithPassword({ email, password: password + "new" })).error).toBeNull();
     await verification.auth.signOut();
