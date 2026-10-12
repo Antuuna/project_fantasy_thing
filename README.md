@@ -2,6 +2,49 @@
 
 The active objective is the fantasy roster application in `IMPLEMENTATION.md`, using the existing local 2025–26 NBA regular-season dataset. Data acquisition is complete. The dataset was originally collected for private ML practice; that earlier project scope has been superseded.
 
+See [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) for milestone requirements and [local verification evidence](docs/mvp-progress.md) for reproduced results. The application implements authentication, player browsing, roster management, watchlist notes, and historical daily lineups. Release status and acceptance evidence are recorded in [the acceptance checklist](docs/mvp-acceptance.md).
+
+## Run the Next.js application
+
+Use Node.js 22 or newer (Node.js 24 was used for the initial scaffold).
+
+```sh
+npm ci
+npm run dev
+```
+
+Open http://localhost:3000. `/dashboard` manages the roster and historical lineups; `/players` provides search, season averages, and per-game history; `/watchlist` stores personal notes. A missing dataset has a setup state. Search/history/watchlists use bounded 20-row pages. Positions remain unknown where the imported source lacks them.
+
+For local development, install Docker and Supabase CLI (verification used CLI 2.120.0), then run:
+
+```sh
+supabase start
+supabase migration up --local
+npm run dev:local
+```
+
+`dev:local` discovers only the running loopback stack, overrides hosted public variables from `.env.local`, and uses `APP_URL=http://localhost:3000`. It never forwards importer credentials. Do not reset the existing populated database. Apply both additional player-query migrations in order. A fresh empty stack needs a dataset import; reuse the CSVs selected by `data/CURRENT` when available. Synthetic CI setup is described below.
+
+Add these application variables to your ignored `.env.local` using the placeholders in `.env.example`:
+
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=https://PROJECT_REF.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_REPLACE_ME
+```
+
+Find both in the Supabase project's Connect dialog. Restart the development server after changing them. Keep `SUPABASE_DB_URL` in the importer-only `.env`; do not copy privileged credentials into public variables. Next.js loads `.env` too, but application clients reference only the two public variables above. The browser and server clients both use the signed-in session so database RLS applies. The proxy refreshes session cookies; protected pages and server mutations verify the session before accessing private data.
+
+```sh
+npm run lint
+npm run typecheck
+npm run build
+npm start
+```
+
+The production build uses the supported webpack compiler. Turbopack's CSS worker could not bind its port in this execution environment, including with expanded execution permissions; webpack preserves the CSS and installed versions and reproduces passing builds. Fresh audit on 2026-10-12 reports five high-severity development findings in the Next.js lint plugin → `fast-glob` / `micromatch` / `braces` chain; `npm audit --omit=dev` reports zero findings. The suggested automatic fix downgrades `eslint-config-next` to 14.2.35, which is incompatible with this installed Next.js version. No dependency downgrade/upgrade was made; review a compatible fix when available.
+
+Dependencies are pinned in `package.json` and `package-lock.json`. `lib/supabase/client.ts` serves Client Components; `lib/supabase/server.ts` serves Server Components, Server Actions, and Route Handlers. The setup follows the [Supabase SSR guide](https://supabase.com/docs/guides/auth/server-side/creating-a-client?framework=nextjs) and [Next.js installation guide](https://nextjs.org/docs/app/getting-started/installation).
+
 ## Application implementation
 
 The initial database migration is `supabase/migrations/20261012042000_roster_planner.sql`. It defines shared NBA tables, import metadata, private rosters/watchlists/lineups, RLS policies, season averages, and authenticated RPCs:
@@ -13,7 +56,7 @@ The initial database migration is `supabase/migrations/20261012042000_roster_pla
 
 Membership and lineup changes must use the RPCs; direct client writes are denied. The functions serialize changes by locking the parent roster. Roster names and watchlist notes can be updated through ordinary authenticated table requests. The importer must publish shared data and successful metadata in one transaction.
 
-The migration is applied to the local Supabase development database, and all 18 pgTAP checks pass. The full validated dataset has been imported locally twice without duplicates. All 12 Python checks pass, including a PostgreSQL integration test that injects a failed refresh and verifies data and metadata preservation. Broader two-user mutation coverage and concurrent roster/lineup-write verification remain required. Cloud import, frontend, and deployment are not yet verified.
+All three migrations are applied locally. The database gate enforces 280 pgTAP assertions, including the original 18; eight independent-transaction tests prove actual lock overlap and serial roster/lineup outcomes. The importer regression suite verifies repeat import and late-failure rollback. Application requests use signed-in publishable clients; privileged clients are restricted to local test setup and the importer. Hosted migration/import, deployment, and production email configuration remain release work.
 
 ## Import into Supabase
 
@@ -40,13 +83,11 @@ set +a
 For the standard local Supabase instance, use `postgresql://postgres:postgres@127.0.0.1:54322/postgres` instead. That local development password is not a hosted credential. The local import is already complete.
 
 ```sh
-# Opt-in database integration test: use a disposable migrated database.
-# Successful imports and the injected failure are all rolled back by the test.
-export SUPABASE_TEST_DB_URL="$SUPABASE_DB_URL"
-.venv/bin/python -m unittest discover -s tests -v
+# Required local full-data gate. No hosted credential fallback and no skips.
+npm run test:full-data
 ```
 
-The integration test checks repeated upserts, one metadata record per version, and rollback after a late foreign-key error. Without `SUPABASE_TEST_DB_URL`, that test is explicitly skipped. Run `supabase/tests/roster_planner.sql` against the disposable development database for the 18 schema/RLS checks. These tests do not yet establish concurrent roster/lineup safety.
+The strict wrapper fixes the PostgreSQL target to `127.0.0.1:54322/postgres`, requires the selected complete dataset, and fails on required skips. The standalone legacy Python integration test is opt-in and also rejects hosted targets; use the wrapper for an acceptance gate. Database fixtures roll back, and concurrency/browser accounts are unique and cleaned up. No routine test reads hosted credentials from environment files.
 
 The prior source-use review is retained in `docs/data-feasibility.md`; the completed technical collection does not resolve its documented fantasy-use concern for publication.
 
@@ -64,7 +105,7 @@ The completed collection contains **1,230 games, 26,651 player appearances, 582 
 | `player_games.csv` | One appearance per player/game, historical team and opponent, designated home flag, minutes, counting and shooting statistics |
 | `metadata.json` | Attribution, timestamps, counts, bounds, validation results, corrections, SHA-256 hashes |
 
-Source: **NBA.com**, accessed through `nba_api`. Retain attribution and original source notices with local data. Data and the Python environment are ignored by Git. The local dataset is ready to use; application persistence will use Supabase.
+Source: **NBA.com**, accessed through `nba_api`. Retain attribution and original source notices with local data. Data and the Python environment are ignored by Git. The local dataset is ready to use; application persistence uses Supabase.
 
 ## Reproduce
 
@@ -108,3 +149,60 @@ Five games had contradictory away markers in the source logs. Their designated h
 Use chronological train/validation/test splits for future-performance prediction. Construct rolling features using prior games only (shift before rolling). Same-game scores, shooting results, minutes, and other completed-game statistics can leak a prediction target. Neither full-season aggregates nor the presence of a player's appearance should be treated as pregame knowledge when modeling availability.
 
 No model or training target is selected yet. The raw appearance dataset supports choosing those separately.
+
+## Authentication setup
+
+Set `APP_URL=http://localhost:3000` in `.env.local`; use your canonical HTTPS application origin in production. The application never derives email destinations from request headers. In Supabase **Authentication → URL Configuration**, set Site URL to that origin and allow these redirect URLs (replace the origin for deployment):
+
+- `http://localhost:3000/auth/callback`
+- `http://localhost:3000/auth/callback?next=/update-password`
+
+The default confirmation/recovery emails use PKCE callbacks. Open those links in the same browser that requested them. For links that also work across browsers, configure the email templates using the [Supabase token-hash flow](https://supabase.com/docs/guides/auth/auth-email-templates):
+
+- Confirm signup link: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
+- Reset password link: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery`
+
+With email confirmation enabled, registration displays a check-email message. With confirmation disabled, registration signs in immediately. Passwords must be 8–128 characters; Supabase may impose stronger project-specific rules. Reset requests display an account-neutral success message. Expired/invalid email links lead to a recovery page. Signed-in users can also change their password at `/update-password`.
+
+`/dashboard` requires verified claims and initializes the user's roster through `ensure_roster()` on authenticated use. Repeated visits reuse the existing roster. All private reads and mutations use the session-bound publishable client, with RLS applied. Sign-out returns to `/sign-in`.
+
+Hosted email delivery, project email templates, and production callback configuration require verification against the hosted project before deployment.
+
+### Local test gates
+
+Create `.venv` with the pinned requirements if it does not already exist:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.lock.txt
+```
+
+With the migrated populated local stack running and email confirmation disabled (the normal local setting):
+
+```sh
+npx playwright install chromium
+npm run test:auth
+npm run test:unit
+npm run test:db
+npm run test:concurrency
+npm run test:full-data
+npm run test:e2e:production
+```
+
+`test:auth` stays focused; `test:e2e` runs the ordinary full suite in development; `test:e2e:production` builds and starts the application with the **same** local public variables at build and runtime on port 3101. All override hosted `.env.local` values and refuse alternate targets. Temporary account teardown is checked. Required SQL failures, plan mismatches, incomplete execution, missing services/data, and required skips fail their runners. Transaction races prove overlap rather than using browser request scheduling as concurrency evidence. Run browser/confirmation suites sequentially; port reuse is deliberately disabled.
+
+For real confirmation and recovery mail, run the dedicated controlled gate:
+
+```sh
+npm run test:confirmation
+```
+
+It temporarily enables **local** email confirmation and adds port-3101 redirects, restarts Supabase while preserving data volumes, builds/tests against local mail at http://127.0.0.1:54324, then restores the original config bytes and normal disabled mode in `finally`. It verifies unchanged shared/private/account counts and deletes only the test recipient's mail. It does not change hosted Auth settings or exhaust a mail provider. Do not run it alongside another local test or app session. If killed before restoration, recover `supabase/config.toml` from `supabase/.confirmation-test-lock/original-config.toml`, restart the stack with `supabase stop` then `supabase start`, verify normal settings/data, and remove the lock only after recovery. Never use `stop --no-backup` on the populated development stack.
+
+The tests retain generated token-hash coverage; actual local email tests separately verify same-browser PKCE. Hosted email delivery and production redirects still require M6 verification. When configuring local Auth manually, set `site_url` and `additional_redirect_urls` in `supabase/config.toml` to match the application/callback origins listed above, then restart the stack without resetting data.
+
+### Synthetic CI versus complete dataset
+
+[The CI workflow](.github/workflows/local-tests.yml) creates its own disposable Docker stack, applies migrations, and seeds fictional teams/players/appearances using `scripts/testing/seed_synthetic.py`. It tests zero minutes, unknown positions, traded-player relationships, literal search, history pagination, and no-game dates without publishing NBA data. The seeder refuses existing shared/private/auth rows. Its rollback-only insertion check also runs safely alongside the full dataset.
+
+Ordinary CI does **not** prove complete NBA collection integrity: ignored `data/` is absent from a checkout. `npm run test:full-data` on the retained complete dataset remains required for importer/data changes and final local acceptance. Do not replace it with the synthetic gate or skip it silently. See [progress evidence](docs/mvp-progress.md), [rendered usability review](docs/usability-review.md), and [M6 release checklist](docs/mvp-acceptance.md).

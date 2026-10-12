@@ -49,3 +49,29 @@ Subsequent milestone results are appended after their combined gates pass.
 - Clean combined production gate: all 24 browser/API workflows passed, zero retries/skips, including six lineup flows and Pacific/Tokyo checks. SQL: 280 assertions passed. Proven transaction races: 8 passed. Unit suite: 10 passed. Lint/typecheck and fresh webpack production build passed.
 - Independent review found no security/transaction defect. Resolved review improvements: date input keyed to selected date; prior success message hidden when dirty; explicit starter labels; baseline refreshed from saved props while preserving action feedback. Expanded dashboard required scoping prior auth/status and roster/link assertions; no assertion weakened.
 - No additional schema migration required. Next: M5 confirmation-enabled mail, rendered usability review, final regression and acceptance handoff.
+
+## M5 — final local acceptance and handoff
+
+- Final production suite: `npm run test:e2e:production` **26 tests passed**, zero retries/skips, including auth, all product flows, crafted mutations, API security, keyboard/pending/error and rendered usability. Build and runtime used identical loopback public settings. Lint/typecheck passed after final code changes.
+- `npm run test:confirmation`: **1 workflow passed** with confirmation enabled, actual signup and recovery mail through the local Mailpit viewer, same-browser PKCE, pre-confirmation protected denial, password update and subsequent sign-in. Original local config bytes, disabled confirmation mode, and all shared/private/account row counts restored. Token-hash coverage remains in the ordinary auth suite. An initial immediate sign-out URL assertion was corrected to await navigation; no failing/partial run counted as a pass.
+- `npm run test:db`: **280 assertions passed**; `npm run test:concurrency`: **8 proven overlapping transaction tests passed**; `npm run test:full-data`: **22 tests passed**, including all original 12 and importer repeat/failure rollback, zero skips. `npm run test:unit`: **18 tests passed**, including deterministic email/request throttles and recovery failure with no retries/false success. Synthetic fixture actual insertion checks remain rollback-only; full-data tests use unchanged `data/CURRENT`.
+- Rendered review: all seven final PNGs inspected at desktop 1280×900 and mobile 375×812. No clipping/overlap; tables scroll locally with visible hints, controls have labels/focus, and saved starters remain selected immediately after saving. Keyboard review found React's automatic native form reset could blank controlled starter dropdowns; prevented the reset and added immediate-value regressions. Final combined gate verifies the fix. See `docs/usability-review.md`.
+- Independent final security review: no unresolved functional, authorization, transaction, or integrity defect. Hardened legacy direct importer tests and synthetic connectors against alternate targets/`PGHOSTADDR`. Credential-pattern scans exclude environment files and found zero literal secrets; application code contains no service-role client.
+- Fresh dependency audit: five high development-only lint-chain findings; production-only audit zero. Documented bounded tooling exception, no dependency upgrade/downgrade. The Turbopack worker-port restriction remains documented; supported webpack builds reproduce successfully with CSS intact.
+- README, specification status and acceptance map updated; M6 checklist prepared in `docs/mvp-acceptance.md`. Hosted schema/import, source-use publication review, mail configuration and deployment are **not** complete. CI workflow is implemented but its external GitHub execution is not claimed locally.
+- Related starting scaffold was reviewed and integrated in `d9cafbd`; handoff also preserves/integrates the pre-existing application environment template, ignore rules, local callback config and development/spec documentation. Actual `.env`, `.env.local` and other ignored environment files remain untouched. No user commit amended, history rewritten, dataset recollected/reset, remote push, paid service or hosted mutation performed.
+
+## Commit summary
+
+| Local commit | Delivered work |
+| --- | --- |
+| `35d1ad4` | M0 local-only runners, strict TAP parsing, production E2E, synthetic CI fixtures. |
+| `d9b3ea4` | M1 authorization matrix and proven overlapping transactions. |
+| `d9cafbd` | Reviewed existing auth/app foundation and shared runner integration. |
+| `5411e33` | M2 bounded historical player browsing, invoker views, actual retry recovery. |
+| `8bac72b` | M3 roster/watchlist persistence and literal-name search correction. |
+| `9258034` | M4 historical snapshots, current-roster editing and dashboard. |
+| `08e6e2a` | M5 real local-mail callbacks, deterministic auth failures, target hardening and reviewed config prerequisites. |
+| `b0bd031` | M5 native lineup-reset fix, keyboard/rendered acceptance and mobile table hints. |
+
+The final handoff commit records this evidence, README, preserved development plan/specification status, security/usability reviews, specification-mapped acceptance and M6 checklist. All commits are local; original user commits `7d1ca23` and `bc08b88` remain unchanged.

@@ -2,6 +2,8 @@
 
 > Scope amendment (2026-10-11): The user resumed the fantasy roster application using the existing NBA dataset. The fantasy requirements below are active again. Reuse the completed local collection; do not repeat data feasibility or acquisition. The earlier private ML scope is superseded.
 
+For the remaining implementation sequence, per-milestone tests, quality gates, temporary email-confirmation policy, and a ready-to-use agent prompt, see [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md). This specification remains the product requirements reference; the development plan records fresh verification separately from earlier checkpoints.
+
 ## Current implementation checkpoint
 
 Data acquisition and technical feasibility are complete for the local dataset. Reuse the version selected by `data/CURRENT`; do not repeat the feasibility probe or full collection as a prerequisite to further work.
@@ -12,13 +14,13 @@ Data acquisition and technical feasibility are complete for the local dataset. R
 - Verification: all six dataset integrity tests pass, including CSV hashes, counts, historical relationships, duplicate/missing-data rejection, and failed-refresh preservation.
 - Limitations: positions are unknown; minutes have whole-minute precision. Preserve text game IDs and historical team relationships.
 
-The collector, normalization, local atomic publication, and full-season validation already exist. The initial Supabase schema and transactional mutations are written in `supabase/migrations/20261012042000_roster_planner.sql`; the migration has been executed locally and all 18 pgTAP checks pass. The transactional CSV importer (`scripts/nba/import_dataset.py`) has published the full dataset to local Supabase twice. All 12 Python checks pass, including repeat-import and injected-failure rollback verification against PostgreSQL. Broader two-user security verification and concurrent roster/lineup-write testing remain pending; cloud import has not been verified. Application features and deployment do not yet exist. Existing source-use documentation covers private ML practice; acquisition success alone does not establish suitability for a different use. Keep the previously documented fantasy-use concern visible before publishing NBA data.
+Local milestones M0–M5 are complete. The original importer/schema/locking RPCs are preserved; two additional versioned migrations provide authenticated invoker player/history views and literal bounded name search. The application now implements authentication, player directory/details, roster rename/add/remove, watchlist notes, saved historical snapshots/current-roster editing, and responsive dashboard states. Fresh final gates pass: 26 production browser/API workflows, one separate real-mail confirmation/recovery PKCE workflow, 280 SQL assertions, eight actual overlapping transaction races, 18 unit tests, and 22 full-data Python tests, with no required skips/retries. Lint/typecheck and supported webpack production builds pass. The documented Turbopack worker-port restriction remains environment-specific. Local email confirmation was restored to its original disabled mode after the enabled test, with configuration bytes and database counts preserved. See [milestone evidence](docs/mvp-progress.md), [acceptance map and M6 checklist](docs/mvp-acceptance.md), and independent security/usability reviews. Hosted migration/import, production authentication/email and Vercel deployment remain unverified; the documented NBA source-use publication gate remains unresolved.
 
 ## Purpose and status
 
 Build a small internship learning project using Next.js, TypeScript, Tailwind, Supabase, and Vercel. Users assemble a personal NBA roster, maintain a watchlist, inspect historical performance, and save daily lineups.
 
-This document is the active fantasy application reference. Technical defaults are recommendations that agents may adapt when required by the repository or supported library versions. Do not expand the product scope without approval. Data extraction is complete; database migration code exists, with local database execution and CSV import verified. A linked Supabase project is present; its cloud database state has not been inspected. Application code and deployment do not exist yet.
+This document remains the product requirements reference. Local MVP acceptance is verified; release completion requires separately authorized hosted verification and deployment after resolving the documented source-use publication concern. Technical defaults can adapt to supported installed libraries without expanding product scope. The linked hosted project's state has not been inspected or changed during local implementation.
 
 ## Required stack and architecture
 
