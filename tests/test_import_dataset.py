@@ -65,8 +65,10 @@ class ImportValidationTests(unittest.TestCase):
 class ImportDatabaseTests(unittest.TestCase):
     def test_repeat_and_failed_refresh_are_atomic(self):
         import psycopg
+        from scripts.testing.seed_synthetic import require_local_target
         version, metadata, tables = importer.load_dataset()
-        with psycopg.connect(os.environ['SUPABASE_TEST_DB_URL'], autocommit=True) as connection:
+        target = require_local_target(os.environ['SUPABASE_TEST_DB_URL'])
+        with psycopg.connect(target, hostaddr='127.0.0.1', connect_timeout=5, autocommit=True) as connection:
             # Entire test rolls back, including successful imports.
             with connection.transaction(force_rollback=True):
                 importer.publish(connection, version, metadata, tables)

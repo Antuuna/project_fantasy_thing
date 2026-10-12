@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { requireUser } from "@/lib/auth/session";
+import { requestSignup, requestRecovery } from '@/lib/auth/requests';
 
 export type AuthState = { error?: string; message?: string };
 function field(form: FormData, name: string) {
@@ -48,29 +49,15 @@ export async function signUp(_: AuthState, form: FormData): Promise<AuthState> {
   if (!emailValid(email)) return { error: "Enter a valid email address." };
   if (error) return { error };
   let signedIn = false;
+  let state: AuthState = {};
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${appUrl()}/auth/callback` } });
-    if (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Supabase registration rejected", { code: error.code ?? "unknown", status: error.status });
-      }
-      const messages: Record<string, string> = {
-        over_email_send_rate_limit: "The email sending limit has been reached. Please try again later.",
-        over_request_rate_limit: "Too many registration attempts. Please try again later.",
-        signup_disabled: "New account registration is disabled for this project.",
-        email_provider_disabled: "Email registration is disabled for this project.",
-        email_address_not_authorized: "This project’s email service cannot send to this address yet. Contact the project administrator.",
-        email_address_invalid: "Supabase rejected this email address. Please use a valid email address.",
-        weak_password: "Your password does not meet this project’s strength requirements. Please choose a stronger password.",
-        captcha_failed: "This project requires CAPTCHA verification, which is not configured in this app yet.",
-      };
-      return { error: messages[error.code ?? ""] ?? "Unable to create an account. Please try again or sign in if you already have one." };
-    }
-    signedIn = Boolean(data.session);
+    const result = await requestSignup(supabase.auth.signUp.bind(supabase.auth),email,password,`${appUrl()}/auth/callback`);
+    signedIn = result.signedIn;
+    state = result.state;
   } catch { return { error: "Unable to complete registration. Please try again." }; }
   if (signedIn) redirect("/dashboard");
-  return { message: "Check your email for a confirmation link, then sign in. If you already have an account, use sign-in or password reset." };
+  return state;
 }
 
 export async function resetPassword(_: AuthState, form: FormData): Promise<AuthState> {
@@ -79,10 +66,8 @@ export async function resetPassword(_: AuthState, form: FormData): Promise<AuthS
   if (!emailValid(email)) return { error: "Enter a valid email address." };
   try {
     const supabase = await createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${appUrl()}/auth/callback?next=/update-password` });
-    if (error) return { error: "Unable to send a reset email right now. Please try again later." };
+    return await requestRecovery(supabase.auth.resetPasswordForEmail.bind(supabase.auth),email,`${appUrl()}/auth/callback?next=/update-password`);
   } catch { return { error: "Unable to reach authentication. Please try again." }; }
-  return { message: "If an account exists for this email, you will receive a password reset link." };
 }
 
 export async function updatePassword(_: AuthState, form: FormData): Promise<AuthState> {

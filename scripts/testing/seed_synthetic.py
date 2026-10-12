@@ -103,7 +103,7 @@ def main():
     url = require_local_target(os.environ.get('SUPABASE_TEST_DB_URL', ''))
     import psycopg
     fixture = json.loads(FIXTURE.read_text())
-    with psycopg.connect(url, connect_timeout=5) as conn:
+    with psycopg.connect(url, hostaddr='127.0.0.1', connect_timeout=5) as conn:
         if args.check:
             conn.execute('set transaction read only')
             verify_fixture(conn, fixture)

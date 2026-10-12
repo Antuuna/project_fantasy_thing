@@ -4,6 +4,7 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests",
   testMatch: "**/*.spec.ts",
+  testIgnore: process.env.E2E_CONFIRMATION === '1' ? [] : ['**/confirmation/**'],
   workers: 1,
   retries: 0,
   use: { baseURL: "http://localhost:3101" },

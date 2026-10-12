@@ -56,6 +56,8 @@ jobs:
           npm run test:concurrency
       - name: Full browser suite against production server
         run: npm run test:e2e:production
+      - name: Real local-mail confirmation and recovery with restored normal mode
+        run: npm run test:confirmation
       - name: Check shared fixtures survived application tests
         run: .venv/bin/python scripts/testing/seed_synthetic.py --check
       - name: Stop this job's disposable stack

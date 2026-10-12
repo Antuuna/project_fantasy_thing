@@ -17,7 +17,7 @@ def main():
     import psycopg
     fixture = json.loads(FIXTURE.read_text())
     target = require_local_target(os.environ.get('SUPABASE_TEST_DB_URL', ''))
-    with psycopg.connect(target, connect_timeout=5) as conn:
+    with psycopg.connect(target, hostaddr='127.0.0.1', connect_timeout=5) as conn:
         try:
             conn.execute("set local lock_timeout = '5s'")
             before = conn.execute('select count(*) from public.nba_players').fetchone()[0]

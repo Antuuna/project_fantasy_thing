@@ -4,3 +4,15 @@ data/
 .env
 .env.*
 !.env.example
+
+# Next.js / Node
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+npm-debug.log*
+.vercel/
+playwright-report/
+test-results/
+supabase/.confirmation-test-lock/

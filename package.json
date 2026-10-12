@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:local": "LOCAL_APP_PORT=3000 node scripts/testing/browser-server.mjs",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
@@ -14,7 +15,8 @@
     "test:db": ".venv/bin/python scripts/testing/run_database.py",
     "test:concurrency": ".venv/bin/python scripts/testing/run_concurrency.py",
     "test:full-data": ".venv/bin/python scripts/testing/run_full_data.py",
-    "test:unit": "node --experimental-strip-types --test tests/unit/*.test.ts"
+    "test:unit": "node --experimental-strip-types --test tests/unit/*.test.ts tests/unit/*.test.mjs",
+    "test:confirmation": "node scripts/testing/confirmation-mode.mjs"
   },
   "engines": {
     "node": ">=22.0.0"
