@@ -24,3 +24,11 @@ Subsequent milestone results are appended after their combined gates pass.
 - Independent migration review found no concrete security/transaction defect. No migration changed. Existing locking RPCs, importer and session clients retained.
 - Worker reruns briefly encountered approval-review HTTP 429 infrastructure failures; coordinator reruns executed successfully. No required check remains blocked.
 - Next: M2 player queries and bounded historical browsing.
+
+## M2 — player directory and history
+
+- Added `/players` search and stable 20-row pages, `/players/[id]` averages and recent-first 20-row history, unknown positions, empty/missing/import-error states and navigation.
+- Migration `20261012060000_player_directory.sql` adds authenticated security-invoker season/history views; applied locally without reset. Teams and opponents derive from recorded appearances/games.
+- SQL gate: 251 assertions passed (18 + 190 + 43 synthetic query assertions). Eight transaction regressions passed. Validation unit suite: 2 tests passed. Synthetic fixture safety: 2 tests; actual rollback insertion checks: 11 assertions passed.
+- Full production suite: 12 passed. The error-retry check exposed that the inherited `reset()` button did not refetch Server Components; switched to installed Next.js `retry()` API and reproduced both targeted state tests (2 passed) with a fresh production build. Lint/typecheck passed after the final change.
+- Independent query/migration review found no authorization, cache-sharing, or bounded-query defect. No required checks skipped. Next: M3 roster and watchlist mutations.

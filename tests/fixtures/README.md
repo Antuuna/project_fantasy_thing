@@ -3,6 +3,9 @@ an unknown position, an actual recorded zero-minute appearance, appearance-based
 averages, a player appearing for two historical teams, leading-zero game IDs,
 inclusive season boundaries, and an in-range date without games. Player 990099 has
 no appearances and must not appear in the imported-season directory.
+Player 990001 has 24 appearances so browser history pagination crosses a full
+20-row page in fixture-backed CI. Expected averages are calculated from the
+fixture rows rather than hardcoded rounded values.
 
 Only on a newly created disposable local stack:
 

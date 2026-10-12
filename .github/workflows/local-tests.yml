@@ -38,6 +38,7 @@ jobs:
         run: |
           npm run lint
           npm run typecheck
+          npm run test:unit
           .venv/bin/python -m unittest discover -s tests/fixtures -v
       - name: Create disposable local stack and apply migrations
         run: |

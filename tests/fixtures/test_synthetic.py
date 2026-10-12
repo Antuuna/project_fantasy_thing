@@ -26,6 +26,7 @@ class SyntheticFixtureTests(unittest.TestCase):
         self.assertIsNone(players[990002][2])
         self.assertTrue(any(row[0] == 990002 and row[3] == 0 for row in fixture['stats']))
         self.assertEqual({row[2] for row in fixture['stats'] if row[0] == 990001}, {9901, 9902})
+        self.assertGreater(sum(row[0] == 990001 for row in fixture['stats']), 20)
         games = {row[0]: row for row in fixture['games']}
         dates = [row[2] for row in fixture['games']]
         self.assertEqual((min(dates), max(dates)), (fixture['date_min'], fixture['date_max']))

@@ -13,7 +13,8 @@
     "test:e2e:production": "E2E_PRODUCTION=1 playwright test",
     "test:db": ".venv/bin/python scripts/testing/run_database.py",
     "test:concurrency": ".venv/bin/python scripts/testing/run_concurrency.py",
-    "test:full-data": ".venv/bin/python scripts/testing/run_full_data.py"
+    "test:full-data": ".venv/bin/python scripts/testing/run_full_data.py",
+    "test:unit": "node --experimental-strip-types --test tests/unit/*.test.ts"
   },
   "engines": {
     "node": ">=22.0.0"
