@@ -12,13 +12,13 @@ Data acquisition and technical feasibility are complete for the local dataset. R
 - Verification: all six dataset integrity tests pass, including CSV hashes, counts, historical relationships, duplicate/missing-data rejection, and failed-refresh preservation.
 - Limitations: positions are unknown; minutes have whole-minute precision. Preserve text game IDs and historical team relationships.
 
-The collector, normalization, local atomic publication, and full-season validation already exist. The initial Supabase schema and transactional mutations are written in `supabase/migrations/20261012042000_roster_planner.sql`; database execution, security verification, concurrent-write testing, and CSV import are pending. Application features and deployment do not yet exist. Existing source-use documentation covers private ML practice; acquisition success alone does not establish suitability for a different use. Keep the previously documented fantasy-use concern visible before publishing NBA data.
+The collector, normalization, local atomic publication, and full-season validation already exist. The initial Supabase schema and transactional mutations are written in `supabase/migrations/20261012042000_roster_planner.sql`; the migration has been executed locally and all 18 pgTAP checks pass. The transactional CSV importer (`scripts/nba/import_dataset.py`) has published the full dataset to local Supabase twice. All 12 Python checks pass, including repeat-import and injected-failure rollback verification against PostgreSQL. Broader two-user security verification and concurrent roster/lineup-write testing remain pending; cloud import has not been verified. Application features and deployment do not yet exist. Existing source-use documentation covers private ML practice; acquisition success alone does not establish suitability for a different use. Keep the previously documented fantasy-use concern visible before publishing NBA data.
 
 ## Purpose and status
 
 Build a small internship learning project using Next.js, TypeScript, Tailwind, Supabase, and Vercel. Users assemble a personal NBA roster, maintain a watchlist, inspect historical performance, and save daily lineups.
 
-This document is the active fantasy application reference. Technical defaults are recommendations that agents may adapt when required by the repository or supported library versions. Do not expand the product scope without approval. Data extraction is complete; database migration code exists, but a cloud database, application code, and deployment have not been provisioned.
+This document is the active fantasy application reference. Technical defaults are recommendations that agents may adapt when required by the repository or supported library versions. Do not expand the product scope without approval. Data extraction is complete; database migration code exists, with local database execution and CSV import verified. A linked Supabase project is present; its cloud database state has not been inspected. Application code and deployment do not exist yet.
 
 ## Required stack and architecture
 

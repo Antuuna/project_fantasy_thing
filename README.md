@@ -13,7 +13,40 @@ The initial database migration is `supabase/migrations/20261012042000_roster_pla
 
 Membership and lineup changes must use the RPCs; direct client writes are denied. The functions serialize changes by locking the parent roster. Roster names and watchlist notes can be updated through ordinary authenticated table requests. The importer must publish shared data and successful metadata in one transaction.
 
-Apply the migration to a disposable Supabase development database, then execute `supabase/tests/roster_planner.sql` with pgTAP available. These database tests are prepared but have not been run: PostgreSQL, Supabase CLI, and Docker are unavailable on the current machine. Two-user mutation coverage and concurrent-write verification remain required before this milestone is accepted. No Supabase project has been provisioned or connected, and no CSV-to-Supabase import, frontend, or deployment exists yet.
+The migration is applied to the local Supabase development database, and all 18 pgTAP checks pass. The full validated dataset has been imported locally twice without duplicates. All 12 Python checks pass, including a PostgreSQL integration test that injects a failed refresh and verifies data and metadata preservation. Broader two-user mutation coverage and concurrent roster/lineup-write verification remain required. Cloud import, frontend, and deployment are not yet verified.
+
+## Import into Supabase
+
+Install the pinned dependencies from `requirements.lock.txt`. The importer uses PostgreSQL directly so all upserts and successful metadata publish in one transaction; separate REST requests would not provide this guarantee. It validates hashes, counts, keys, required statistics, dates, and historical relationships before connecting. It loads teams, players, games, then appearances using temporary staging tables and verifies stored values and season counts before committing. Concurrent imports are serialized; any error rolls back the entire publication. No shared or private records are deleted. Unexpected extra games/appearances in the target season cause verification to fail rather than silently changing history.
+
+```sh
+.venv/bin/python scripts/nba/import_dataset.py --validate-only
+```
+
+Copy `.env.example` to the ignored `.env` and fill in `SUPABASE_DB_URL` using the Supabase Dashboard **Connect** panel. Use a privileged PostgreSQL direct connection or session pooler URL (port 5432), with `sslmode=require` for hosted Supabase. URL-encode special characters in the password. These are database credentials, not the publishable API key or service-role API key. The importer never prints the connection URL or raw driver errors. It reads the exported environment; it does not automatically load `.env`.
+
+[Supabase connection guidance](https://supabase.com/docs/guides/database/connecting-to-postgres) explains direct versus session-pooler connections.
+
+```sh
+# .env contains shell-compatible assignments; keep it local.
+set -a
+source .env
+set +a
+.venv/bin/python scripts/nba/import_dataset.py
+# Repeat safely: rows are updated, not duplicated; metadata records one row per version.
+.venv/bin/python scripts/nba/import_dataset.py
+```
+
+For the standard local Supabase instance, use `postgresql://postgres:postgres@127.0.0.1:54322/postgres` instead. That local development password is not a hosted credential. The local import is already complete.
+
+```sh
+# Opt-in database integration test: use a disposable migrated database.
+# Successful imports and the injected failure are all rolled back by the test.
+export SUPABASE_TEST_DB_URL="$SUPABASE_DB_URL"
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+The integration test checks repeated upserts, one metadata record per version, and rollback after a late foreign-key error. Without `SUPABASE_TEST_DB_URL`, that test is explicitly skipped. Run `supabase/tests/roster_planner.sql` against the disposable development database for the 18 schema/RLS checks. These tests do not yet establish concurrent roster/lineup safety.
 
 The prior source-use review is retained in `docs/data-feasibility.md`; the completed technical collection does not resolve its documented fantasy-use concern for publication.
 
